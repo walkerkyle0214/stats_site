@@ -16,24 +16,32 @@ cached_stats = []
 def load_data_from_excel(file_path):
     data = pd.read_excel(file_path)
     for index, row in data.iterrows():
-        stat = BattedBallStat(
+        # Check if record already exists to prevent duplicates
+        exists = BattedBallStat.query.filter_by(
             batter=row['BATTER'],
-            batter_id=row['BATTER_ID'],
-            exit_direction=row['EXIT_DIRECTION'],
-            exit_speed=row['EXIT_SPEED'],
             game_date=row['GAME_DATE'],
-            hang_time=row['HANG_TIME'],
-            hit_distance=row['HIT_DISTANCE'],
-            hit_spin_rate=row['HIT_SPIN_RATE'],
-            launch_angle=row['LAUNCH_ANGLE'],
-            pitcher=row['PITCHER'],
-            pitcher_id=row['PITCHER_ID'],
-            play_outcome=row['PLAY_OUTCOME'],
-            video_link=row['VIDEO_LINK']
-        )
-        db.session.add(stat)
+            exit_speed=row['EXIT_SPEED'],
+            launch_angle=row['LAUNCH_ANGLE']
+        ).first()
+        
+        if not exists:
+            stat = BattedBallStat(
+                batter=row['BATTER'],
+                batter_id=row['BATTER_ID'],
+                exit_direction=row['EXIT_DIRECTION'],
+                exit_speed=row['EXIT_SPEED'],
+                game_date=row['GAME_DATE'],
+                hang_time=row['HANG_TIME'],
+                hit_distance=row['HIT_DISTANCE'],
+                hit_spin_rate=row['HIT_SPIN_RATE'],
+                launch_angle=row['LAUNCH_ANGLE'],
+                pitcher=row['PITCHER'],
+                pitcher_id=row['PITCHER_ID'],
+                play_outcome=row['PLAY_OUTCOME'],
+                video_link=row['VIDEO_LINK']
+            )
+            db.session.add(stat)
     db.session.commit()
-
 def init_db():
     if not os.path.exists('BBD.db'):
         with app.app_context():
@@ -44,9 +52,6 @@ def init_db():
 def load_cached_stats(sort_column='avg_exit_speed', sort_order='desc'):
     global cached_stats
     order_by = f"{sort_column} {'ASC' if sort_order == 'asc' else 'DESC'}"
-    
-    """for unknown reasons, the count that a batter appears is multiplied by 48. 
-    so for qualified hitters, multiply 10*48=480 to get hitters with 10+ batted balls."""
 
     sql = text(f"""
     SELECT batter, 
@@ -56,7 +61,7 @@ def load_cached_stats(sort_column='avg_exit_speed', sort_order='desc'):
            AVG(hit_distance) AS avg_hit_distance
     FROM batted_ball_stat
     GROUP BY batter
-    HAVING COUNT(*) >= 480
+    HAVING COUNT(*) >= 10
     ORDER BY {order_by};
     """)
     
