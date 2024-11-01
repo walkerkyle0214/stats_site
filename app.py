@@ -10,7 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///BBD.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Global variable to cache the query result
+# Global variable to cache the query result, allowing for quicker data retrival
 cached_stats = []
 
 def load_data_from_excel(file_path):
@@ -46,7 +46,7 @@ def load_cached_stats(sort_column='avg_exit_speed', sort_order='desc'):
     order_by = f"{sort_column} {'ASC' if sort_order == 'asc' else 'DESC'}"
     
     """for unknown reasons, the count that a batter appears is multiplied by 48. 
-    so for qualified hitters, multiply 10*48=480 to get hitters with 10 batted balls."""
+    so for qualified hitters, multiply 10*48=480 to get hitters with 10+ batted balls."""
 
     sql = text(f"""
     SELECT batter, 
@@ -61,7 +61,6 @@ def load_cached_stats(sort_column='avg_exit_speed', sort_order='desc'):
     """)
     
     result = db.session.execute(sql)
-    # Build the cached_stats list with all the required fields
     cached_stats = [{'batter': row[0], 
                      'avg_exit_speed': row[2], 
                      'avg_launch_angle': row[3], 
@@ -74,11 +73,35 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    sort_column = request.args.get('sort', 'avg_exit_speed')  # Default sorting by avg_exit_speed
-    sort_order = request.args.get('order', 'desc')  # Default order is descending
+    sort_column = request.args.get('sort', 'avg_exit_speed')
+    sort_order = request.args.get('order', 'desc')
 
-    load_cached_stats(sort_column, sort_order)  # Load stats with sorting
+    load_cached_stats(sort_column, sort_order)
     return render_template('index.html', stats=cached_stats)
+
+@app.route('/player/<batter>')
+def player_stats(batter):
+    # Fetch individual stats for the selected player
+    sql = text("""
+    SELECT batter, 
+           exit_speed,
+           launch_angle,
+           hit_distance,
+           game_date,
+           play_outcome,
+           video_link
+    FROM batted_ball_stat
+    WHERE batter = :batter
+    """)
+    result = db.session.execute(sql, {'batter': batter})
+    player_stats = [{'exit_speed': row[1],
+                     'launch_angle': row[2],
+                     'hit_distance': row[3],
+                     'game_date': row[4],
+                     'play_outcome': row[5],
+                     'video_link': row[6]} for row in result]
+    print(len(player_stats))
+    return render_template('player_stats.html', batter=batter, stats=player_stats)
 
 if __name__ == "__main__":
     app.run(debug=True)

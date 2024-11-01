@@ -15,7 +15,7 @@
         </tr>
         {% for stat in stats %}
         <tr>
-            <td>{{ stat.batter }}</td>
+            <td><a href="{{ url_for('player_stats', batter=stat.batter) }}">{{ stat.batter }}</a></td>
             <td>{{ stat.avg_launch_angle | round(2) }}</td>
             <td>{{ stat.avg_exit_speed | round(2) }}</td>
             <td>{{ stat.avg_hit_distance | round(2) }}</td>
