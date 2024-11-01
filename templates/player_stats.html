@@ -3,41 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ batter }} - Individual Stats</title>
+    <style>
+        /* Styles for the baseball diamond */
+        .diamond {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Diamond shape */
+            background-color: #f0f0f0;
+            margin: 20px auto;
+            border: 2px solid black;
+        }
+        .base {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); /* Diamond shape */
+            background-color: rgb(92, 87, 87);
+            border-radius: 50%;
+        }
+        .home { top: 280px; left: 140px; } /* Home Plate */
+        .first { top: 140px; left: 280px; } /* First Base */
+        .second { top: 0px; left: 140px; } /* Second Base */
+        .third { top: 140px; left: 0px; } /* Third Base */
+        
+        .stats {
+            margin: 20px auto;
+            text-align: center;
+        }
+        /* Styles for the plotted points */
+        .point {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: red;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
 </head>
 <body>
     <h1>{{ batter }} - Individual Stats</h1>
 
-    <!-- Display the Exit Direction Breakdown -->
-    <h2>Exit Direction Breakdown</h2>
-    <ul>
-        <li>-45 to -22.5 degrees: {{ direction_percentages['-45 to -22.5'] | round(2) }}%</li>
-        <li>-22.5 to 0 degrees: {{ direction_percentages['-22.5 to 0'] | round(2) }}%</li>
-        <li>0 to 22.5 degrees: {{ direction_percentages['0 to 22.5'] | round(2) }}%</li>
-        <li>22.5 to 45 degrees: {{ direction_percentages['22.5 to 45'] | round(2) }}%</li>
-    </ul>
+    <!-- Baseball Diamond Visualization -->
+    <div class="diamond">
+        <div class="base home"></div>
+        <div class="base first"></div>
+        <div class="base second"></div>
+        <div class="base third"></div>
 
-    <table border="1">
-        <tr>
-            <th>Exit Direction</th>
-            <th>Exit Speed</th>
-            <th>Launch Angle</th>
-            <th>Hit Distance</th>
-            <th>Game Date</th>
-            <th>Play Outcome</th>
-            <th>Video Link</th>
-        </tr>
-        {% for stat in stats %}
-        <tr>
-            <td>{{ stat.exit_direction }}</td>
-            <td>{{ stat.exit_speed | round(2) }}</td>
-            <td>{{ stat.launch_angle | round(2) }}</td>
-            <td>{{ stat.hit_distance | round(2) }}</td>
-            <td>{{ stat.game_date }}</td>
-            <td>{{ stat.play_outcome }}</td>
-            <td><a href="{{ stat.video_link }}" target="_blank">Watch</a></td>
-        </tr>
+        {% for point in points %}
+            <div class="point" style="left: {{ point[0] + 150 }}px; top: {{ point[1] + 280 }}px;"></div>
         {% endfor %}
-    </table>
+    </div>
+
+    <div class="stats">
+        <h2>Exit Direction Breakdown</h2>
+        <ul style="list-style-type: none; padding: 0;">
+            <li>-45 to -22.5 degrees: {{ direction_percentages['-45 to -22.5'] | round(2) }}%</li>
+            <li>-22.5 to 0 degrees: {{ direction_percentages['-22.5 to 0'] | round(2) }}%</li>
+            <li>0 to 22.5 degrees: {{ direction_percentages['0 to 22.5'] | round(2) }}%</li>
+            <li>22.5 to 45 degrees: {{ direction_percentages['22.5 to 45'] | round(2) }}%</li>
+        </ul>
+
+        <table border="1" style="margin: auto;">
+            <tr>
+                <th>Exit Direction</th>
+                <th>Exit Speed</th>
+                <th>Launch Angle</th>
+                <th>Hit Distance</th>
+                <th>Game Date</th>
+                <th>Play Outcome</th>
+                <th>Video Link</th>
+            </tr>
+            {% for stat in stats %}
+            <tr>
+                <td>{{ stat.exit_direction }}</td>
+                <td>{{ stat.exit_speed | round(2) }}</td>
+                <td>{{ stat.launch_angle | round(2) }}</td>
+                <td>{{ stat.hit_distance | round(2) }}</td>
+                <td>{{ stat.game_date }}</td>
+                <td>{{ stat.play_outcome }}</td>
+                <td><a href="{{ stat.video_link }}" target="_blank">Watch</a></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
     
     <a href="{{ url_for('index') }}">Back to All Stats</a>
 </body>

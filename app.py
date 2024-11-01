@@ -4,13 +4,14 @@ from models import db, BattedBallStat
 import pandas as pd
 import os
 from sqlalchemy import text
+import math
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///BBD.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Global variable to cache the query result, allowing for quicker data retrival
+# Global variable to cache the query result, allowing for quicker data retrieval
 cached_stats = []
 
 def load_data_from_excel(file_path):
@@ -42,6 +43,7 @@ def load_data_from_excel(file_path):
             )
             db.session.add(stat)
     db.session.commit()
+
 def init_db():
     if not os.path.exists('BBD.db'):
         with app.app_context():
@@ -70,7 +72,6 @@ def load_cached_stats(sort_column='avg_exit_speed', sort_order='desc'):
                      'avg_exit_speed': row[2], 
                      'avg_launch_angle': row[3], 
                      'avg_hit_distance': row[4]} for row in result]
-    #print(cached_stats)
 
 # Initialize the database and load cached data when the app starts
 with app.app_context():
@@ -107,7 +108,7 @@ def player_stats(batter):
                      'game_date': row[5],
                      'play_outcome': row[6],
                      'video_link': row[7]} for row in result]
-    
+
     # Calculate the percentage of hits in each exit direction quarter
     direction_counts = {
         '-45 to -22.5': 0,
@@ -130,8 +131,25 @@ def player_stats(batter):
     
     direction_percentages = {key: (count / total_hits) * 100 for key, count in direction_counts.items()}
 
-    return render_template('player_stats.html', batter=batter, stats=player_stats, direction_percentages=direction_percentages)
+    # Calculate positions for plotting points on the diamond
+    points = []
+    for stat in player_stats:
+        exit_direction = stat['exit_direction']
+        hit_distance = stat['hit_distance']
+        
+        # Calculate the angle in radians
+        angle_rad = math.radians(exit_direction)
 
+        # Calculate x and y coordinates
+        x = hit_distance * math.cos(angle_rad)
+        y = -hit_distance * math.sin(angle_rad)  # Invert y-axis to match the diamond layout
+
+        points.append((x, y))
+
+    print(points)
+
+    return render_template('player_stats.html', batter=batter, stats=player_stats, 
+                           direction_percentages=direction_percentages, points=points)
 
 if __name__ == "__main__":
     app.run(debug=True)
