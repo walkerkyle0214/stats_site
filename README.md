@@ -4,7 +4,7 @@ this did not make it into the final version. I highly recommend looking at this,
 unable to get it just right. The stats on the homepage can be sorted by clicking on the headers, and clicking the batters name shows their outcomes on batted balls for the given date range.
 
 Before cloning the repository, it should be noted that the git ignores the spreadsheet file, and it will have to be placed in the data folder before running. This is to save having to download it.
-To run this app, clone the main repository in your system, and run the following command in the directory:
+To run this app, clone the main repository in your system, and run the following command in the directory having flask installed on your system:
 
 FLASK_APP=app.py flask run 
 
