@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Batted Ball Stats - Averages</title>
+</head>
+<body>
+    <h1>Batted Ball Stats - Averages</h1>
+    <table border="1">
+        <tr>
+            <th><a href="?sort=batter&order={{ 'asc' if request.args.get('sort') != 'batter' or request.args.get('order') == 'desc' else 'desc' }}">Batter</a></th>
+            <th><a href="?sort=avg_launch_angle&order={{ 'asc' if request.args.get('sort') != 'avg_launch_angle' or request.args.get('order') == 'desc' else 'desc' }}">Average Launch Angle</a></th>
+            <th><a href="?sort=avg_exit_speed&order={{ 'asc' if request.args.get('sort') != 'avg_exit_speed' or request.args.get('order') == 'desc' else 'desc' }}">Average Exit Speed</a></th>
+            <th><a href="?sort=avg_hit_distance&order={{ 'asc' if request.args.get('sort') != 'avg_hit_distance' or request.args.get('order') == 'desc' else 'desc' }}">Average Hit Distance</a></th>
+        </tr>
+        {% for stat in stats %}
+        <tr>
+            <td>{{ stat.batter }}</td>
+            <td>{{ stat.avg_launch_angle | round(2) }}</td>
+            <td>{{ stat.avg_exit_speed | round(2) }}</td>
+            <td>{{ stat.avg_hit_distance | round(2) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
