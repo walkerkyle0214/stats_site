@@ -89,6 +89,7 @@ def player_stats(batter):
     # Fetch individual stats for the selected player
     sql = text("""
     SELECT batter, 
+           exit_direction,
            exit_speed,
            launch_angle,
            hit_distance,
@@ -99,14 +100,38 @@ def player_stats(batter):
     WHERE batter = :batter
     """)
     result = db.session.execute(sql, {'batter': batter})
-    player_stats = [{'exit_speed': row[1],
-                     'launch_angle': row[2],
-                     'hit_distance': row[3],
-                     'game_date': row[4],
-                     'play_outcome': row[5],
-                     'video_link': row[6]} for row in result]
-    print(len(player_stats))
-    return render_template('player_stats.html', batter=batter, stats=player_stats)
+    player_stats = [{'exit_direction': row[1],
+                     'exit_speed': row[2],
+                     'launch_angle': row[3],
+                     'hit_distance': row[4],
+                     'game_date': row[5],
+                     'play_outcome': row[6],
+                     'video_link': row[7]} for row in result]
+    
+    # Calculate the percentage of hits in each exit direction quarter
+    direction_counts = {
+        '-45 to -22.5': 0,
+        '-22.5 to 0': 0,
+        '0 to 22.5': 0,
+        '22.5 to 45': 0
+    }
+    total_hits = len(player_stats)
+    
+    for stat in player_stats:
+        exit_direction = stat['exit_direction']
+        if -45 <= exit_direction < -22.5:
+            direction_counts['-45 to -22.5'] += 1
+        elif -22.5 <= exit_direction < 0:
+            direction_counts['-22.5 to 0'] += 1
+        elif 0 <= exit_direction < 22.5:
+            direction_counts['0 to 22.5'] += 1
+        elif 22.5 <= exit_direction <= 45:
+            direction_counts['22.5 to 45'] += 1
+    
+    direction_percentages = {key: (count / total_hits) * 100 for key, count in direction_counts.items()}
+
+    return render_template('player_stats.html', batter=batter, stats=player_stats, direction_percentages=direction_percentages)
+
 
 if __name__ == "__main__":
     app.run(debug=True)

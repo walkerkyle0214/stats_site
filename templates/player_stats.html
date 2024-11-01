@@ -6,8 +6,19 @@
 </head>
 <body>
     <h1>{{ batter }} - Individual Stats</h1>
+
+    <!-- Display the Exit Direction Breakdown -->
+    <h2>Exit Direction Breakdown</h2>
+    <ul>
+        <li>-45 to -22.5 degrees: {{ direction_percentages['-45 to -22.5'] | round(2) }}%</li>
+        <li>-22.5 to 0 degrees: {{ direction_percentages['-22.5 to 0'] | round(2) }}%</li>
+        <li>0 to 22.5 degrees: {{ direction_percentages['0 to 22.5'] | round(2) }}%</li>
+        <li>22.5 to 45 degrees: {{ direction_percentages['22.5 to 45'] | round(2) }}%</li>
+    </ul>
+
     <table border="1">
         <tr>
+            <th>Exit Direction</th>
             <th>Exit Speed</th>
             <th>Launch Angle</th>
             <th>Hit Distance</th>
@@ -17,6 +28,7 @@
         </tr>
         {% for stat in stats %}
         <tr>
+            <td>{{ stat.exit_direction }}</td>
             <td>{{ stat.exit_speed | round(2) }}</td>
             <td>{{ stat.launch_angle | round(2) }}</td>
             <td>{{ stat.hit_distance | round(2) }}</td>
@@ -26,6 +38,7 @@
         </tr>
         {% endfor %}
     </table>
+    
     <a href="{{ url_for('index') }}">Back to All Stats</a>
 </body>
 </html>
